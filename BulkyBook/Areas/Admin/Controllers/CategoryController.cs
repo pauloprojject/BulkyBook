@@ -1,5 +1,7 @@
 ﻿using BulkyBook.Models;
 using BulkyBook.Repository.IRepository;
+using BulkyBook.Utility;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -9,11 +11,12 @@ using System.Threading.Tasks;
 namespace BulkyBook.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    public class CompanyController : Controller
+    [Authorize(Roles = SD.Role_Admin)]
+    public class CategoryController : Controller
     {
         private readonly IUnityOfWork _unityOfWork;
 
-        public CompanyController(IUnityOfWork unityOfWork)
+        public CategoryController(IUnityOfWork unityOfWork)
         {
             _unityOfWork = unityOfWork;
         }
@@ -22,44 +25,44 @@ namespace BulkyBook.Areas.Admin.Controllers
         {
             return View();
         }
-        
+
         public IActionResult Upsert(int? id)
         {
 
-            Company company = new Company();
+            Category category = new Category();
             if (id == null)
             {
                 // this is for create
-                return View(company);
+                return View(category);
             }
             // this is for edit
-            company = _unityOfWork.Company.Get(id.GetValueOrDefault());
-            if(company == null)
+            category = _unityOfWork.Category.Get(id.GetValueOrDefault());
+            if (category == null)
             {
                 return NotFound();
             }
 
-            return View(company);
+            return View(category);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Upsert(Company company)
+        public IActionResult Upsert(Category category)
         {
             if (ModelState.IsValid)
             {
-                if (company.Id == 0)
+                if (category.Id == 0)
                 {
-                    _unityOfWork.Company.Add(company);
+                    _unityOfWork.Category.Add(category);
                 }
                 else
                 {
-                    _unityOfWork.Company.Update(company);
+                    _unityOfWork.Category.Update(category);
                 }
-                    _unityOfWork.Save();
+                _unityOfWork.Save();
                 return RedirectToAction(nameof(Index));
             }
-            return View(company);
+            return View(category);
         }
 
 
@@ -68,19 +71,19 @@ namespace BulkyBook.Areas.Admin.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            var allObj = _unityOfWork.Company.GetAll();
+            var allObj = _unityOfWork.Category.GetAll();
             return Json(new { data = allObj });
         }
 
         [HttpDelete]
         public IActionResult Delete(int id)
         {
-            var objFromDb = _unityOfWork.Company.Get(id);
+            var objFromDb = _unityOfWork.Category.Get(id);
             if (objFromDb == null)
             {
                 return Json(new { success = false, message = "Error while deleting" });
             }
-            _unityOfWork.Company.Remove(objFromDb);
+            _unityOfWork.Category.Remove(objFromDb);
             _unityOfWork.Save();
             return Json(new { success = true, message = "Delete Successful" });
 
